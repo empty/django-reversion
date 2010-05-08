@@ -20,6 +20,7 @@ import sys
 
 from django.contrib.contenttypes.models import ContentType
 from django.core import serializers
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models.query import QuerySet
 from django.db.models.signals import post_save
@@ -236,7 +237,10 @@ class RevisionManager(object):
                         if hasattr(obj, related_field.get_cache_name()):
                             delattr(obj, related_field.get_cache_name())
                 # Get the references obj(s).
-                related = getattr(obj, relationship, None)
+                try:
+                    related = getattr(obj, relationship, None)
+                except ObjectDoesNotExist:
+                    related = None
                 if isinstance(related, models.Model):
                     _follow_relationships(related) 
                 elif isinstance(related, (models.Manager, QuerySet)):
